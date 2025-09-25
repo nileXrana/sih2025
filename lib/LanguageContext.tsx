@@ -32,13 +32,13 @@ export function LanguageSelector() {
   const { language, setLanguage } = useLanguage();
 
   const languages = [
-    { code: 'en' as Language, name: 'English', flag: '🇺🇸' },
+    { code: 'en' as Language, name: 'English', flag: '🇮🇳' },
     { code: 'hi' as Language, name: 'हिंदी', flag: '🇮🇳' },
     { code: 'pa' as Language, name: 'ਪੰਜਾਬੀ', flag: '🇮🇳' }
   ];
 
   return (
-    <div className="relative">
+    <div className="relative px-1.5">
       <select
         value={language}
         onChange={(e) => setLanguage(e.target.value as Language)}

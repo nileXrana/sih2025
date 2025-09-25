@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import VideoConsultation from '@/components/VideoConsultation'
+import { useLanguage, LanguageSelector } from "@/lib/LanguageContext"
+import { getTranslation } from "@/lib/translations"
 
 interface User {
   id: string
@@ -23,6 +25,7 @@ interface Patient {
 }
 
 export default function MIRoomDashboard() {
+  const { language } = useLanguage()
   const [user, setUser] = useState<User | null>(null)
   const [patients, setPatients] = useState<Patient[]>([])
   const [activeTab, setActiveTab] = useState('overview')
@@ -103,16 +106,19 @@ export default function MIRoomDashboard() {
                 </svg>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">MI Room Dashboard</h1>
-                <p className="text-gray-600">Welcome, {user?.name}</p>
+                <h1 className="text-2xl font-bold text-gray-900">{getTranslation('dashboardTitle', language) as string}</h1>
+                <p className="text-gray-600">{getTranslation('welcomeMessage', language) as string}, {user?.name}</p>
               </div>
             </div>
-            <button
-              onClick={handleLogout}
-              className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
-            >
-              Logout
-            </button>
+            <div className="flex items-center space-x-4">
+              <LanguageSelector />
+              <button
+                onClick={handleLogout}
+                className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                {getTranslation('logout', language) as string}
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -122,11 +128,11 @@ export default function MIRoomDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex space-x-8">
             {[
-              { id: 'overview', name: 'Overview', icon: '📊' },
-              { id: 'patients', name: 'Patients', icon: '👥' },
-              { id: 'symptoms', name: 'Symptom Detection', icon: '🔍' },
-              { id: 'consultations', name: 'Consultations', icon: '🩺' },
-              { id: 'register', name: 'Register Patient', icon: '➕' }
+              { id: 'overview', name: getTranslation('overview', language) as string, icon: '📊' },
+              { id: 'patients', name: getTranslation('recentPatients', language) as string, icon: '👥' },
+              { id: 'symptoms', name: getTranslation('symptomDetection', language) as string, icon: '🔍' },
+              { id: 'consultations', name: getTranslation('todayConsultations', language) as string, icon: '🩺' },
+              { id: 'register', name: getTranslation('patientRegistration', language) as string, icon: '➕' }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -164,7 +170,7 @@ export default function MIRoomDashboard() {
                     <div className="ml-5 w-0 flex-1">
                       <dl>
                         <dt className="text-sm font-medium text-gray-500 truncate">
-                          Total Patients
+                          {getTranslation('totalPatients', language) as string}
                         </dt>
                         <dd className="text-lg font-medium text-gray-900">
                           {patients.length}
@@ -188,7 +194,7 @@ export default function MIRoomDashboard() {
                     <div className="ml-5 w-0 flex-1">
                       <dl>
                         <dt className="text-sm font-medium text-gray-500 truncate">
-                          Today's Consultations
+                          {getTranslation('todayConsultations', language) as string}
                         </dt>
                         <dd className="text-lg font-medium text-gray-900">0</dd>
                       </dl>
@@ -273,7 +279,7 @@ export default function MIRoomDashboard() {
                             className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 text-sm font-medium flex items-center space-x-1"
                           >
                             <span>🎥</span>
-                            <span>Video Call</span>
+                            <span>{getTranslation('videoCall', language) as string}</span>
                           </button>
                         </div>
                       </div>
@@ -336,6 +342,7 @@ export default function MIRoomDashboard() {
 
 // Symptom Detection Form Component
 function SymptomDetectionForm({ onStartVideoConsultation }: { onStartVideoConsultation: (patient: any) => void }) {
+  const { language } = useLanguage()
   const [selectedPatient, setSelectedPatient] = useState('')
   const [symptoms, setSymptoms] = useState('')
   const [vitalSigns, setVitalSigns] = useState({
@@ -562,7 +569,7 @@ Ministry of Health & Family Welfare
       {/* Patient Selection */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Select Patient
+          {getTranslation('selectPatient', language) as string}
         </label>
         <select
           value={selectedPatient}
@@ -581,23 +588,23 @@ Ministry of Health & Family Welfare
       {/* Symptoms Input */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Describe Symptoms *
+          {getTranslation('symptoms', language) as string} *
         </label>
         <textarea
           rows={4}
           value={symptoms}
           onChange={(e) => setSymptoms(e.target.value)}
-          placeholder="e.g., Patient complains of fever, cough, and body ache for 2 days..."
+          placeholder={getTranslation('enterSymptoms', language) as string}
           className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
         />
       </div>
 
       {/* Vital Signs */}
       <div>
-        <h4 className="text-lg font-medium text-gray-900 mb-4">Vital Signs</h4>
+        <h4 className="text-lg font-medium text-gray-900 mb-4">{getTranslation('vitalSigns', language) as string}</h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Temperature (°F)</label>
+            <label className="block text-sm font-medium text-gray-700">{getTranslation('temperature', language) as string}</label>
             <input
               type="number"
               step="0.1"
@@ -608,7 +615,7 @@ Ministry of Health & Family Welfare
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Blood Pressure</label>
+            <label className="block text-sm font-medium text-gray-700">{getTranslation('bloodPressure', language) as string}</label>
             <input
               type="text"
               value={vitalSigns.bloodPressure}
@@ -618,7 +625,7 @@ Ministry of Health & Family Welfare
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Heart Rate (bpm)</label>
+            <label className="block text-sm font-medium text-gray-700">{getTranslation('heartRate', language) as string}</label>
             <input
               type="number"
               value={vitalSigns.heartRate}
@@ -628,7 +635,7 @@ Ministry of Health & Family Welfare
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Respiratory Rate</label>
+            <label className="block text-sm font-medium text-gray-700">{getTranslation('respiratoryRate', language) as string}</label>
             <input
               type="number"
               value={vitalSigns.respiratoryRate}
@@ -638,7 +645,7 @@ Ministry of Health & Family Welfare
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Oxygen Saturation (%)</label>
+            <label className="block text-sm font-medium text-gray-700">{getTranslation('oxygenSaturation', language) as string}</label>
             <input
               type="number"
               value={vitalSigns.oxygenSaturation}
@@ -660,12 +667,12 @@ Ministry of Health & Family Welfare
           {isAnalyzing ? (
             <>
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-              <span>Analyzing...</span>
+              <span>{getTranslation('analyzing', language) as string}</span>
             </>
           ) : (
             <>
               <span>🔍</span>
-              <span>Analyze Symptoms</span>
+              <span>{getTranslation('analyzeSymptoms', language) as string}</span>
             </>
           )}
         </button>
@@ -674,12 +681,12 @@ Ministry of Health & Family Welfare
       {/* Analysis Results */}
       {analysis && (
         <div className="mt-8 space-y-6">
-          <h4 className="text-xl font-bold text-gray-900">🤖 AI Analysis Results</h4>
+          <h4 className="text-xl font-bold text-gray-900">🤖 {getTranslation('aiAnalysisResults', language) as string}</h4>
           
           {/* Urgency Level */}
           <div className="bg-white border rounded-lg p-4">
             <div className="flex items-center justify-between mb-4">
-              <h5 className="text-lg font-semibold">Urgency Level</h5>
+              <h5 className="text-lg font-semibold">{getTranslation('urgencyLevel', language) as string}</h5>
               <span className={`px-3 py-1 rounded-full text-sm font-medium ${getUrgencyColor(analysis.urgencyLevel)}`}>
                 {analysis.urgencyLevel} Priority
               </span>
@@ -688,7 +695,7 @@ Ministry of Health & Family Welfare
 
           {/* Possible Conditions */}
           <div className="bg-white border rounded-lg p-4">
-            <h5 className="text-lg font-semibold mb-3">Possible Conditions</h5>
+            <h5 className="text-lg font-semibold mb-3">{getTranslation('possibleConditions', language) as string}</h5>
             <ul className="space-y-2">
               {analysis.possibleConditions.map((condition: string, index: number) => (
                 <li key={index} className="flex items-center space-x-2">
@@ -704,7 +711,7 @@ Ministry of Health & Family Welfare
 
           {/* Recommendations */}
           <div className="bg-white border rounded-lg p-4">
-            <h5 className="text-lg font-semibold mb-3">Treatment Recommendations</h5>
+            <h5 className="text-lg font-semibold mb-3">{getTranslation('recommendations', language) as string}</h5>
             <ul className="space-y-2">
               {analysis.recommendations.map((rec: string, index: number) => (
                 <li key={index} className="flex items-start space-x-2">
@@ -738,7 +745,7 @@ Ministry of Health & Family Welfare
                       className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium flex items-center space-x-2 shadow-lg transform hover:scale-105 transition-all"
                     >
                       <span>🎥</span>
-                      <span>Start Video Consultation</span>
+                      <span>{getTranslation('startVideoConsultation', language) as string}</span>
                     </button>
                     <button className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-medium flex items-center space-x-2 shadow-lg">
                       <span>�</span>
@@ -753,13 +760,13 @@ Ministry of Health & Family Welfare
           {/* Save Analysis */}
           <div className="flex justify-end space-x-4">
             {/* <button className="bg-gray-600 text-white px-6 py-2 rounded-md hover:bg-gray-700">
-              💾 Save Analysis
+              {getTranslation('saveAnalysis', language) as string}
             </button> */}
             <button 
               onClick={generateAndDownloadReceipt}
               className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700"
             >
-              📋 Print Report
+              {getTranslation('printReport', language) as string}
             </button>
           </div>
         </div>
@@ -770,6 +777,7 @@ Ministry of Health & Family Welfare
 
 // Patient Registration Form Component
 function PatientRegistrationForm({ onSuccess }: { onSuccess: () => void }) {
+  const { language } = useLanguage()
   const [formData, setFormData] = useState({
     name: '',
     age: '',
@@ -829,7 +837,7 @@ function PatientRegistrationForm({ onSuccess }: { onSuccess: () => void }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Full Name *
+            {getTranslation('patientName', language) as string} *
           </label>
           <input
             type="text"
@@ -842,7 +850,7 @@ function PatientRegistrationForm({ onSuccess }: { onSuccess: () => void }) {
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Age *
+            {getTranslation('age', language) as string} *
           </label>
           <input
             type="number"
@@ -857,7 +865,7 @@ function PatientRegistrationForm({ onSuccess }: { onSuccess: () => void }) {
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Gender *
+            {getTranslation('gender', language) as string} *
           </label>
           <select
             required
@@ -865,9 +873,9 @@ function PatientRegistrationForm({ onSuccess }: { onSuccess: () => void }) {
             onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
           >
-            <option value="">Select Gender</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
+            <option value="">{getTranslation('gender', language) as string}</option>
+            <option value="Male">{getTranslation('male', language) as string}</option>
+            <option value="Female">{getTranslation('female', language) as string}</option>
             <option value="Other">Other</option>
           </select>
         </div>

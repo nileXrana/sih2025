@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { useLanguage } from "@/lib/LanguageContext"
+import { getTranslation } from "@/lib/translations"
 
 interface LoginFormProps {
   title: string
@@ -12,6 +14,7 @@ interface LoginFormProps {
 }
 
 export default function LoginForm({ title, role, redirectPath, className }: LoginFormProps) {
+  const { language } = useLanguage()
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -25,7 +28,7 @@ export default function LoginForm({ title, role, redirectPath, className }: Logi
     
     // Basic validation - just check if fields are not empty
     if (!formData.email.trim() || !formData.password.trim()) {
-      setError('Please fill in all fields')
+      setError(getTranslation('fillAllFields', language) as string)
       return
     }
 
@@ -43,17 +46,17 @@ export default function LoginForm({ title, role, redirectPath, className }: Logi
     <div className={cn("max-w-md mx-auto bg-white rounded-lg shadow-md p-6", className)}>
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
-        <p className="text-gray-600 mt-2">Please sign in to continue</p>
+        <p className="text-gray-600 mt-2">{getTranslation('pleaseSignIn', language) as string}</p>
         <div className="mt-3 p-3 bg-green-50 rounded-md text-sm text-green-700">
-          <p className="font-semibold">🚀 Prototype Mode: Direct Access</p>
-          <p className="text-xs mt-1">Enter any email and password to access the dashboard instantly</p>
+          <p className="font-semibold">{getTranslation('prototypeMode', language) as string}</p>
+          <p className="text-xs mt-1">{getTranslation('prototypeInstructions', language) as string}</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-            Email Address
+            {getTranslation('emailAddress', language) as string}
           </label>
           <input
             type="email"
@@ -62,13 +65,13 @@ export default function LoginForm({ title, role, redirectPath, className }: Logi
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            placeholder={role === 'MI_ROOM_INCHARGE' ? 'e.g., incharge@miroom.com' : 'e.g., doctor@hospital.com'}
+            placeholder={role === 'MI_ROOM_INCHARGE' ? getTranslation('emailPlaceholderMI', language) as string : getTranslation('emailPlaceholderDoctor', language) as string}
           />
         </div>
 
         <div>
           <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-            Password
+            {getTranslation('password', language) as string}
           </label>
           <input
             type="password"
@@ -77,7 +80,7 @@ export default function LoginForm({ title, role, redirectPath, className }: Logi
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             value={formData.password}
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            placeholder="Enter any password (demo mode)"
+            placeholder={getTranslation('passwordPlaceholder', language) as string}
           />
         </div>
 
@@ -92,13 +95,13 @@ export default function LoginForm({ title, role, redirectPath, className }: Logi
           disabled={isLoading}
           className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {isLoading ? 'Signing in...' : 'Sign In'}
+          {isLoading ? getTranslation('signingIn', language) as string : getTranslation('signIn', language) as string}
         </button>
       </form>
 
       <div className="mt-6 text-center">
         <a href="/" className="text-blue-600 hover:text-blue-700 text-sm">
-          ← Back to Home
+          {getTranslation('backToHome', language) as string}
         </a>
       </div>
     </div>
