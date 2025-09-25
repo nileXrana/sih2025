@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import VideoConsultation from '@/components/VideoConsultation'
 
 interface User {
   id: string
@@ -26,6 +27,8 @@ export default function MIRoomDashboard() {
   const [patients, setPatients] = useState<Patient[]>([])
   const [activeTab, setActiveTab] = useState('overview')
   const [loading, setLoading] = useState(true)
+  const [showVideoConsultation, setShowVideoConsultation] = useState(false)
+  const [selectedPatientForConsultation, setSelectedPatientForConsultation] = useState<any>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -258,8 +261,19 @@ export default function MIRoomDashboard() {
                           <button className="text-green-600 hover:text-green-900 text-sm font-medium">
                             View Details
                           </button>
-                          <button className="text-blue-600 hover:text-blue-900 text-sm font-medium">
-                            Start Consultation
+                          <button 
+                            onClick={() => {
+                              setSelectedPatientForConsultation({
+                                ...patient,
+                                symptoms: 'General consultation requested',
+                                urgency: 'Medium'
+                              })
+                              setShowVideoConsultation(true)
+                            }}
+                            className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 text-sm font-medium flex items-center space-x-1"
+                          >
+                            <span>🎥</span>
+                            <span>Video Call</span>
                           </button>
                         </div>
                       </div>
@@ -280,7 +294,12 @@ export default function MIRoomDashboard() {
                   Enter patient symptoms to get instant AI-powered analysis and treatment recommendations
                 </p>
                 <div className="mt-6">
-                  <SymptomDetectionForm />
+                  <SymptomDetectionForm 
+                    onStartVideoConsultation={(patient) => {
+                      setSelectedPatientForConsultation(patient)
+                      setShowVideoConsultation(true)
+                    }}
+                  />
                 </div>
               </div>
             </div>
@@ -300,12 +319,23 @@ export default function MIRoomDashboard() {
           )}
         </div>
       </main>
+
+      {/* Video Consultation Modal */}
+      {showVideoConsultation && selectedPatientForConsultation && (
+        <VideoConsultation
+          patient={selectedPatientForConsultation}
+          onClose={() => {
+            setShowVideoConsultation(false)
+            setSelectedPatientForConsultation(null)
+          }}
+        />
+      )}
     </div>
   )
 }
 
 // Symptom Detection Form Component
-function SymptomDetectionForm() {
+function SymptomDetectionForm({ onStartVideoConsultation }: { onStartVideoConsultation: (patient: any) => void }) {
   const [selectedPatient, setSelectedPatient] = useState('')
   const [symptoms, setSymptoms] = useState('')
   const [vitalSigns, setVitalSigns] = useState({
@@ -597,9 +627,28 @@ function SymptomDetectionForm() {
                 <div>
                   <h5 className="text-lg font-semibold text-red-800">Doctor Consultation Required</h5>
                   <p className="text-red-700">This case requires immediate medical attention from a qualified doctor.</p>
-                  <button className="mt-3 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">
-                    📞 Request Doctor Consultation
-                  </button>
+                  <div className="mt-4 flex space-x-3">
+                    <button 
+                      onClick={() => {
+                        const selectedPatientData = patientsList.find(p => p.id === selectedPatient)
+                        if (selectedPatientData) {
+                          onStartVideoConsultation({
+                            ...selectedPatientData,
+                            symptoms,
+                            urgency: analysis.urgencyLevel
+                          })
+                        }
+                      }}
+                      className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium flex items-center space-x-2 shadow-lg transform hover:scale-105 transition-all"
+                    >
+                      <span>🎥</span>
+                      <span>Start Video Consultation</span>
+                    </button>
+                    <button className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-medium flex items-center space-x-2 shadow-lg">
+                      <span>�</span>
+                      <span>Text Consultation</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
