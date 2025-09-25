@@ -461,6 +461,102 @@ function SymptomDetectionForm({ onStartVideoConsultation }: { onStartVideoConsul
     }
   }
 
+  const generateAndDownloadReceipt = () => {
+    // Create receipt content
+    const currentDate = new Date().toLocaleDateString('en-IN')
+    const currentTime = new Date().toLocaleTimeString('en-IN')
+    const selectedPatientData = patientsList.find(p => p.id === selectedPatient)
+    
+    const receiptContent = `
+MI ROOM MEDICAL REPORT
+========================
+
+Date: ${currentDate}
+Time: ${currentTime}
+MI Room Facility ID: MIR-001
+
+PATIENT INFORMATION:
+-------------------
+Name: ${selectedPatientData?.name || '[Patient Name]'}
+Age: ${selectedPatientData?.age || '[Patient Age]'}
+Village: ${selectedPatientData?.village || '[Patient Village]'}
+Patient ID: ${selectedPatient || '[Patient ID]'}
+
+SYMPTOMS REPORTED:
+-----------------
+${symptoms || 'No symptoms recorded'}
+
+VITAL SIGNS:
+-----------
+Blood Pressure: ${vitalSigns.bloodPressure || 'Not recorded'}
+Temperature: ${vitalSigns.temperature || 'Not recorded'}°F
+Heart Rate: ${vitalSigns.heartRate || 'Not recorded'} bpm
+Respiratory Rate: ${vitalSigns.respiratoryRate || 'Not recorded'} per min
+Oxygen Saturation: ${vitalSigns.oxygenSaturation || 'Not recorded'}%
+
+${analysis ? `
+AI ANALYSIS RESULTS:
+-------------------
+Urgency Level: ${analysis.urgency}
+Risk Assessment: ${analysis.urgency === 'Critical' ? 'HIGH RISK' : analysis.urgency === 'High' ? 'MODERATE RISK' : 'LOW RISK'}
+
+Possible Conditions:
+${analysis.possibleConditions.map((condition: string, index: number) => `${index + 1}. ${condition}`).join('\n')}
+
+RECOMMENDATIONS:
+---------------
+${analysis.recommendations.map((rec: string, index: number) => `${index + 1}. ${rec}`).join('\n')}
+
+${analysis.doctorConsultationNeeded ? 'DOCTOR CONSULTATION: REQUIRED - Immediate specialist referral recommended' : 'DOCTOR CONSULTATION: Not immediately required'}
+` : ''}
+
+PRESCRIBED MEDICATIONS:
+----------------------
+(To be filled by MI Room Incharge based on analysis)
+
+FOLLOW-UP INSTRUCTIONS:
+----------------------
+- Monitor symptoms for next 24-48 hours
+- Return immediately if symptoms worsen
+- Take medications as prescribed
+- Maintain adequate rest and hydration
+
+NEXT APPOINTMENT:
+----------------
+Follow-up Date: ${new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN')}
+Follow-up Time: 10:00 AM
+
+EMERGENCY CONTACT:
+-----------------
+MI Room: +91-XXXXXXXXXX
+Emergency: 108
+Ambulance: 102
+
+========================
+This is an AI-assisted analysis report.
+Final diagnosis and treatment should be
+confirmed by qualified medical personnel.
+
+MI Room Digital Health Initiative
+Government of India
+Ministry of Health & Family Welfare
+    `
+
+    // Create and download the file
+    const blob = new Blob([receiptContent], { type: 'text/plain' })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `MI_Room_Report_${selectedPatientData?.name.replace(/\s+/g, '_') || 'Patient'}_${currentDate.replace(/\//g, '-')}_${currentTime.replace(/:/g, '-').replace(/\s/g, '')}.txt`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+    
+    // Show success message
+    alert('📋 Medical report downloaded successfully!')
+  }
+
   return (
     <div className="space-y-6">
       {/* Patient Selection */}
@@ -656,10 +752,13 @@ function SymptomDetectionForm({ onStartVideoConsultation }: { onStartVideoConsul
 
           {/* Save Analysis */}
           <div className="flex justify-end space-x-4">
-            <button className="bg-gray-600 text-white px-6 py-2 rounded-md hover:bg-gray-700">
+            {/* <button className="bg-gray-600 text-white px-6 py-2 rounded-md hover:bg-gray-700">
               💾 Save Analysis
-            </button>
-            <button className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700">
+            </button> */}
+            <button 
+              onClick={generateAndDownloadReceipt}
+              className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700"
+            >
               📋 Print Report
             </button>
           </div>
