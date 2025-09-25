@@ -526,6 +526,98 @@ export const translations: Translations = {
     en: "← Back to Home",
     hi: "← होम पर वापस",
     pa: "← ਘਰ ਵਾਪਸ"
+  },
+
+  // Health Guidelines Section
+  healthGuidelinesTitle: {
+    en: "Essential Health Guidelines",
+    hi: "आवश्यक स्वास्थ्य दिशानिर्देश",
+    pa: "ਜ਼ਰੂਰੀ ਸਿਹਤ ਦਿਸ਼ਾ-ਨਿਰਦੇਸ਼"
+  },
+  
+  healthGuidelinesSubtitle: {
+    en: "Prevention is Better Than Cure - Stay Healthy, Stay Safe",
+    hi: "बचाव इलाज से बेहतर है - स्वस्थ रहें, सुरक्षित रहें",
+    pa: "ਬਚਾਅ ਇਲਾਜ ਨਾਲੋਂ ਬਿਹਤਰ ਹੈ - ਸਿਹਤਮੰਦ ਰਹੋ, ਸੁਰੱਖਿਤ ਰਹੋ"
+  },
+  
+  healthGuidelinesDesc: {
+    en: "Simple daily habits that can prevent diseases and keep you healthy. Follow these evidence-based guidelines to maintain optimal health.",
+    hi: "सरल दैनिक आदतें जो बीमारियों को रोक सकती हैं और आपको स्वस्थ रख सकती हैं। इष्टतम स्वास्थ्य बनाए रखने के लिए इन साक्ष्य-आधारित दिशानिर्देशों का पालन करें।",
+    pa: "ਸਧਾਰਨ ਰੋਜ਼ਾਨਾ ਆਦਤਾਂ ਜੋ ਬਿਮਾਰੀਆਂ ਨੂੰ ਰੋਕ ਸਕਦੀਆਂ ਹਨ ਅਤੇ ਤੁਹਾਨੂੰ ਸਿਹਤਮੰਦ ਰੱਖ ਸਕਦੀਆਂ ਹਨ। ਸਰਵੋਤਮ ਸਿਹਤ ਬਣਾਈ ਰੱਖਣ ਲਈ ਇਨ੍ਹਾਂ ਸਬੂਤ-ਅਧਾਰਿਤ ਦਿਸ਼ਾ-ਨਿਰਦੇਸ਼ਾਂ ਦਾ ਪਾਲਣ ਕਰੋ।"
+  },
+  
+  // Health Guidelines Items
+  handHygieneTitle: {
+    en: "Hand Hygiene",
+    hi: "हाथों की स्वच्छता",
+    pa: "ਹੱਥਾਂ ਦੀ ਸਫਾਈ"
+  },
+  
+  handHygieneDesc: {
+    en: "Wash hands frequently with soap for 20+ seconds, especially before eating and after using restroom",
+    hi: "खाने से पहले और शौचालय के बाद 20+ सेकंड तक साबुन से हाथ धोएं",
+    pa: "ਖਾਣ ਤੋਂ ਪਹਿਲਾਂ ਅਤੇ ਬਾਥਰੂਮ ਦੇ ਬਾਅਦ 20+ ਸਕਿੰਟਾਂ ਲਈ ਸਾਬਣ ਨਾਲ ਹੱਥ ਧੋਵੋ"
+  },
+  
+  balancedDietTitle: {
+    en: "Balanced Nutrition",
+    hi: "संतुलित पोषण",
+    pa: "ਸੰਤੁਲਿਤ ਪੋਸ਼ਣ"
+  },
+  
+  balancedDietDesc: {
+    en: "Include fruits, vegetables, whole grains, lean proteins. Limit processed foods, sugar and salt intake",
+    hi: "फल, सब्जियां, साबुत अनाज, दुबला प्रोटीन शामिल करें। प्रसंस्कृत खाद्य पदार्थ, चीनी और नमक का सेवन सीमित करें",
+    pa: "ਫਲ, ਸਬਜ਼ੀਆਂ, ਸਾਬਤ ਅਨਾਜ, ਪਤਲਾ ਪ੍ਰੋਟੀਨ ਸ਼ਾਮਲ ਕਰੋ। ਪ੍ਰੋਸੈਸਡ ਭੋਜਨ, ਖੰਡ ਅਤੇ ਨਮਕ ਦਾ ਸੇਵਨ ਸੀਮਿਤ ਕਰੋ"
+  },
+  
+  regularExerciseTitle: {
+    en: "Stay Active",
+    hi: "सक्रिय रहें",
+    pa: "ਸਰਗਰਮ ਰਹੋ"
+  },
+  
+  regularExerciseDesc: {
+    en: "Aim for 30+ minutes of moderate physical activity daily. Walking, yoga, or household work counts!",
+    hi: "प्रतिदिन 30+ मिनट की मध्यम शारीरिक गतिविधि का लक्ष्य रखें। चलना, योग, या घरेलू काम भी गिनता है!",
+    pa: "ਰੋਜ਼ਾਨਾ 30+ ਮਿੰਟ ਦੀ ਮੱਧਮ ਸਰੀਰਕ ਗਤੀਵਿਧੀ ਦਾ ਟੀਚਾ ਰੱਖੋ। ਤੁਰਨਾ, ਯੋਗਾ, ਜਾਂ ਘਰੇਲੂ ਕੰਮ ਵੀ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ!"
+  },
+  
+  adequateSleepTitle: {
+    en: "Quality Sleep",
+    hi: "गुणवत्ता भरी नींद",
+    pa: "ਗੁਣਵੱਤਾ ਭਰਪੂਰ ਨੀਂਦ"
+  },
+  
+  adequateSleepDesc: {
+    en: "Get 7-8 hours of restful sleep nightly. Maintain consistent sleep schedule and avoid screens before bed",
+    hi: "रात में 7-8 घंटे की आरामदायक नींद लें। नियमित नींद का कार्यक्रम बनाए रखें और सोने से पहले स्क्रीन से बचें",
+    pa: "ਰਾਤ ਨੂੰ 7-8 ਘੰਟੇ ਦੀ ਆਰਾਮਦਾਇਕ ਨੀਂਦ ਲਓ। ਨਿਯਮਿਤ ਨੀਂਦ ਦਾ ਸਮਾਂ-ਸੂਚੀ ਬਣਾਈ ਰੱਖੋ ਅਤੇ ਸੌਣ ਤੋਂ ਪਹਿਲਾਂ ਸਕਰੀਨ ਤੋਂ ਬਚੋ"
+  },
+  
+  stayHydratedTitle: {
+    en: "Stay Hydrated",
+    hi: "हाइड्रेटेड रहें",
+    pa: "ਪਾਣੀ ਪੀਂਦੇ ਰਹੋ"
+  },
+  
+  stayHydratedDesc: {
+    en: "Drink 8-10 glasses of clean water daily. Increase intake during hot weather and physical activity",
+    hi: "प्रतिदिन 8-10 गिलास स्वच्छ पानी पिएं। गर्म मौसम और शारीरिक गतिविधि के दौरान सेवन बढ़ाएं",
+    pa: "ਰੋਜ਼ਾਨਾ 8-10 ਗਿਲਾਸ ਸਾਫ਼ ਪਾਣੀ ਪੀਓ। ਗਰਮ ਮੌਸਮ ਅਤੇ ਸਰੀਰਕ ਗਤੀਵਿਧੀ ਦੌਰਾਨ ਸੇਵਨ ਵਧਾਓ"
+  },
+  
+  preventiveCaretitle: {
+    en: "Regular Check-ups",
+    hi: "नियमित जांच",
+    pa: "ਨਿਯਮਿਤ ਜਾਂਚ"
+  },
+  
+  preventiveCareDesc: {
+    en: "Schedule routine health screenings. Monitor blood pressure, blood sugar, and maintain vaccination records",
+    hi: "नियमित स्वास्थ्य जांच कराएं। रक्तचाप, रक्त शर्करा की निगरानी करें और टीकाकरण रिकॉर्ड बनाए रखें",
+    pa: "ਨਿਯਮਿਤ ਸਿਹਤ ਜਾਂਚ ਕਰਵਾਓ। ਬਲੱਡ ਪ੍ਰੈਸ਼ਰ, ਖੂਨ ਵਿੱਚ ਖੰਡ ਦੀ ਨਿਗਰਾਨੀ ਕਰੋ ਅਤੇ ਟੀਕਾਕਰਣ ਰਿਕਾਰਡ ਰੱਖੋ"
   }
 };
 
