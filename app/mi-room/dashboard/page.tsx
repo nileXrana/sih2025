@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import VideoConsultation from '@/components/VideoConsultation'
 import { useLanguage, LanguageSelector } from "@/lib/LanguageContext"
 import { getTranslation } from "@/lib/translations"
+import { safeJsonResponse } from '@/lib/api-utils'
 
 interface User {
   id: string
@@ -35,49 +36,123 @@ export default function MIRoomDashboard() {
   const router = useRouter()
 
   useEffect(() => {
-    // Prototype mode - no authentication required
-    setUser({
-      id: '1',
-      name: 'MI Room Incharge',
-      email: 'incharge@miroom.com',
-      role: 'MI_ROOM_INCHARGE'
-    })
+    checkAuth()
     fetchPatients()
-    setLoading(false)
   }, [])
 
-  const fetchPatients = async () => {
-    // Prototype mode - use mock data
-    const mockPatients = [
-      {
-        id: '1',
-        name: 'Rajesh Kumar',
-        age: 45,
-        gender: 'Male',
-        phone: '+91-9876543210',
-        village: 'Khanna',
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: '2',
-        name: 'Sunita Devi',
-        age: 32,
-        gender: 'Female',
-        phone: '+91-9876543211',
-        village: 'Nabha',
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: '3',
-        name: 'Amarjit Singh',
-        age: 58,
-        gender: 'Male',
-        phone: '+91-9876543212',
-        village: 'Ludhiana',
-        createdAt: new Date().toISOString()
+  // Set up SSE for incoming video calls after user is authenticated
+  useEffect(() => {
+    if (user) {
+      setupIncomingCallNotifications()
+    }
+  }, [user])
+
+  const checkAuth = async () => {
+    try {
+      console.log('MI Room - Checking auth...')
+      const response = await fetch('/api/auth/me')
+      if (response.ok) {
+        const contentType = response.headers.get('content-type')
+        if (contentType && contentType.includes('application/json')) {
+          const data = await response.json()
+          console.log('MI Room - User data received:', data)
+          setUser(data.user)
+        } else {
+          console.warn('MI Room - Auth API response is not JSON:', contentType)
+          router.push('/mi-room/login')
+        }
+      } else {
+        console.log('MI Room - Auth failed, redirecting to login')
+        router.push('/mi-room/login')
       }
-    ]
-    setPatients(mockPatients)
+    } catch (error) {
+      console.error('MI Room - Auth check failed:', error)
+      router.push('/mi-room/login')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const setupIncomingCallNotifications = () => {
+    try {
+      console.log('🔔 Setting up incoming call notifications for MI Room user:', user?.name)
+      const eventSource = new EventSource('/api/notifications/mi-room-sse')
+      
+      eventSource.onopen = () => {
+        console.log('✅ MI Room SSE connection established')
+      }
+      
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data)
+          console.log('📡 MI Room SSE message received:', data)
+          
+          switch (data.type) {
+            case 'video_call_incoming':
+              console.log('📞 Incoming video call from doctor:', data.data.doctor.name)
+              handleIncomingVideoCall(data.data)
+              break
+            case 'connected':
+              console.log('MI Room SSE connection confirmed')
+              break
+            case 'ping':
+              // Keep-alive ping
+              break
+          }
+        } catch (error) {
+          console.error('Error parsing MI Room SSE data:', error)
+        }
+      }
+
+      eventSource.onerror = (error) => {
+        console.error('MI Room SSE connection error:', error)
+      }
+
+      // Cleanup on component unmount
+      return () => {
+        console.log('🔌 Closing MI Room SSE connection')
+        eventSource.close()
+      }
+    } catch (error) {
+      console.error('Failed to setup MI Room SSE:', error)
+    }
+  }
+
+  const handleIncomingVideoCall = (callData: any) => {
+    console.log('📞 Handling incoming video call:', callData)
+    // Set the patient and consultation data for the video call
+    setSelectedPatientForConsultation({
+      id: callData.consultation.patient.id,
+      name: callData.consultation.patient.name,
+      age: callData.consultation.patient.age,
+      gender: callData.consultation.patient.gender,
+      symptoms: callData.consultation.symptoms,
+      consultationId: callData.consultationId,
+      doctor: callData.doctor
+    })
+    setShowVideoConsultation(true)
+  }
+
+  const fetchPatients = async () => {
+    try {
+      console.log('📋 Fetching patients...')
+      const response = await fetch('/api/patients')
+      console.log('📋 Patients API response status:', response.status)
+      if (response.ok) {
+        const data = await safeJsonResponse(response)
+        console.log('📋 Patients data received:', data)
+        setPatients(data.patients || [])
+        console.log('📋 Number of patients loaded:', data.patients?.length || 0)
+      } else {
+        console.error('Failed to fetch patients:', response.status)
+        const errorText = await response.text()
+        console.error('Error response:', errorText)
+        setPatients([])
+      }
+    } catch (error) {
+      console.error('Error fetching patients:', error)
+      setPatients([])
+    }
   }
 
   const handleLogout = () => {
@@ -231,7 +306,7 @@ export default function MIRoomDashboard() {
             <div className="bg-white shadow overflow-hidden sm:rounded-md">
               <div className="px-4 py-5 sm:px-6">
                 <h3 className="text-lg leading-6 font-medium text-gray-900">
-                  Registered Patients
+                  Registered Patients ({patients.length})
                 </h3>
                 <p className="mt-1 max-w-2xl text-sm text-gray-500">
                   List of all patients registered at your MI Room.
@@ -269,12 +344,8 @@ export default function MIRoomDashboard() {
                           </button>
                           <button 
                             onClick={() => {
-                              setSelectedPatientForConsultation({
-                                ...patient,
-                                symptoms: 'General consultation requested',
-                                urgency: 'Medium'
-                              })
-                              setShowVideoConsultation(true)
+                              // Redirect to external video consultation platform
+                              window.open('https://quickconnectfrontend.onrender.com/home', '_blank')
                             }}
                             className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 text-sm font-medium flex items-center space-x-1"
                           >
@@ -300,7 +371,8 @@ export default function MIRoomDashboard() {
                   Enter patient symptoms to get instant AI-powered analysis and treatment recommendations
                 </p>
                 <div className="mt-6">
-                  <SymptomDetectionForm 
+                  <SymptomDetectionForm
+                    patients={patients}
                     onStartVideoConsultation={(patient) => {
                       setSelectedPatientForConsultation(patient)
                       setShowVideoConsultation(true)
@@ -330,6 +402,7 @@ export default function MIRoomDashboard() {
       {showVideoConsultation && selectedPatientForConsultation && (
         <VideoConsultation
           patient={selectedPatientForConsultation}
+          consultationId={selectedPatientForConsultation.consultationId}
           onClose={() => {
             setShowVideoConsultation(false)
             setSelectedPatientForConsultation(null)
@@ -341,7 +414,7 @@ export default function MIRoomDashboard() {
 }
 
 // Symptom Detection Form Component
-function SymptomDetectionForm({ onStartVideoConsultation }: { onStartVideoConsultation: (patient: any) => void }) {
+function SymptomDetectionForm({ onStartVideoConsultation, patients }: { onStartVideoConsultation: (patient: any) => void, patients: any[] }) {
   const { language } = useLanguage()
   const [selectedPatient, setSelectedPatient] = useState('')
   const [symptoms, setSymptoms] = useState('')
@@ -354,11 +427,6 @@ function SymptomDetectionForm({ onStartVideoConsultation }: { onStartVideoConsul
   })
   const [analysis, setAnalysis] = useState<any>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [patientsList] = useState([
-    { id: '1', name: 'Rajesh Kumar', age: 45, village: 'Khanna' },
-    { id: '2', name: 'Sunita Devi', age: 32, village: 'Nabha' },
-    { id: '3', name: 'Amarjit Singh', age: 58, village: 'Ludhiana' }
-  ])
 
   const analyzeSymptoms = async () => {
     if (!symptoms.trim()) {
@@ -368,12 +436,41 @@ function SymptomDetectionForm({ onStartVideoConsultation }: { onStartVideoConsul
 
     setIsAnalyzing(true)
     
-    // Simulate AI analysis delay
-    setTimeout(() => {
-      const analysisResult = performSymptomAnalysis(symptoms, vitalSigns)
-      setAnalysis(analysisResult)
-      setIsAnalyzing(false)
-    }, 2000)
+    try {
+      // Create consultation first
+      const consultationResponse = await fetch('/api/consultations/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          patientId: selectedPatient,
+          symptoms,
+          vitals: vitalSigns,
+          isUrgent: false
+        })
+      })
+
+      if (consultationResponse.ok) {
+        const consultationData = await consultationResponse.json()
+        console.log('Consultation created:', consultationData.consultation)
+      }
+
+      // Simulate AI analysis delay
+      setTimeout(() => {
+        const analysisResult = performSymptomAnalysis(symptoms, vitalSigns)
+        setAnalysis(analysisResult)
+        setIsAnalyzing(false)
+      }, 2000)
+    } catch (error) {
+      console.error('Error creating consultation:', error)
+      // Still perform analysis even if consultation creation fails
+      setTimeout(() => {
+        const analysisResult = performSymptomAnalysis(symptoms, vitalSigns)
+        setAnalysis(analysisResult)
+        setIsAnalyzing(false)
+      }, 2000)
+    }
   }
 
   const performSymptomAnalysis = (symptoms: string, vitals: any) => {
@@ -472,7 +569,7 @@ function SymptomDetectionForm({ onStartVideoConsultation }: { onStartVideoConsul
     // Create receipt content
     const currentDate = new Date().toLocaleDateString('en-IN')
     const currentTime = new Date().toLocaleTimeString('en-IN')
-    const selectedPatientData = patientsList.find(p => p.id === selectedPatient)
+    const selectedPatientData = patients.find((p: any) => p.id === selectedPatient)
     
     const receiptContent = `
 MI ROOM MEDICAL REPORT
@@ -577,7 +674,7 @@ Ministry of Health & Family Welfare
           className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
         >
           <option value="">Choose a patient...</option>
-          {patientsList.map((patient) => (
+          {patients.map((patient: any) => (
             <option key={patient.id} value={patient.id}>
               {patient.name} - {patient.age}y, {patient.village}
             </option>
@@ -733,14 +830,8 @@ Ministry of Health & Family Welfare
                   <div className="mt-4 flex space-x-3">
                     <button 
                       onClick={() => {
-                        const selectedPatientData = patientsList.find(p => p.id === selectedPatient)
-                        if (selectedPatientData) {
-                          onStartVideoConsultation({
-                            ...selectedPatientData,
-                            symptoms,
-                            urgency: analysis.urgencyLevel
-                          })
-                        }
+                        // Redirect to external video consultation platform
+                        window.open('https://quickconnectfrontend.onrender.com/home', '_blank')
                       }}
                       className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium flex items-center space-x-2 shadow-lg transform hover:scale-105 transition-all"
                     >

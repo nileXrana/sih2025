@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import ConsultationRoom from '@/components/ConsultationRoom'
+import VideoCallRoom from '@/components/VideoCallRoom'
 
 interface User {
   id: string
@@ -42,21 +43,87 @@ export default function DoctorDashboard() {
   const [loading, setLoading] = useState(true)
   const [activeConsultation, setActiveConsultation] = useState<Consultation | null>(null)
   const [showConsultationRoom, setShowConsultationRoom] = useState(false)
+  const [showVideoCall, setShowVideoCall] = useState(false)
+  const [incomingCall, setIncomingCall] = useState<Consultation | null>(null)
   const router = useRouter()
 
   useEffect(() => {
-    // Temporarily skip auth check for testing
-    setUser({
-      id: 'test',
-      name: 'Dr. Test',
-      email: 'test@doctor.com',
-      role: 'HOSPITAL_DOCTOR',
-      specialization: 'General Medicine',
-      licenseNumber: 'TEST123'
-    })
-    setLoading(false)
+    // Use real authentication instead of mock data
+    checkAuth()
     fetchConsultations()
   }, [])
+
+  // Set up SSE only after user is authenticated
+  useEffect(() => {
+    if (user) {
+      setupRealtimeNotifications()
+    }
+  }, [user])
+
+  const setupRealtimeNotifications = () => {
+    try {
+      console.log('Setting up SSE connection for user:', user?.name)
+      const eventSource = new EventSource('/api/notifications/sse')
+      
+      eventSource.onopen = () => {
+        console.log('✅ SSE connection established')
+      }
+      
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data)
+          console.log('📡 SSE message received:', data)
+          
+          switch (data.type) {
+            case 'connected':
+              console.log('SSE connection confirmed')
+              break
+            case 'new_consultation':
+            case 'urgent_consultation':
+              // Refresh consultations when new ones arrive
+              fetchConsultations()
+              
+              // Show notification for urgent consultations
+              if (data.type === 'urgent_consultation') {
+                console.log('🚨 URGENT CONSULTATION:', data.data.consultation.symptoms)
+              }
+              break
+            case 'consultation_accepted':
+              fetchConsultations()
+              break
+            case 'ping':
+              // Keep-alive ping, do nothing
+              break
+          }
+        } catch (error) {
+          console.error('Error parsing SSE data:', error)
+        }
+      }
+
+      eventSource.onerror = (error) => {
+        console.error('SSE connection error:', error)
+        console.error('SSE readyState:', eventSource.readyState)
+        
+        // Try to reconnect after a delay if connection fails
+        if (eventSource.readyState === EventSource.CLOSED) {
+          console.log('SSE connection closed, will retry in 5 seconds...')
+          setTimeout(() => {
+            if (user) {
+              setupRealtimeNotifications()
+            }
+          }, 5000)
+        }
+      }
+
+      // Cleanup on component unmount
+      return () => {
+        console.log('🔌 Closing SSE connection')
+        eventSource.close()
+      }
+    } catch (error) {
+      console.error('Failed to setup SSE:', error)
+    }
+  }
 
   const checkAuth = async () => {
     try {
@@ -64,9 +131,15 @@ export default function DoctorDashboard() {
       const response = await fetch('/api/auth/me')
       console.log('Dashboard - Auth response status:', response.status)
       if (response.ok) {
-        const data = await response.json()
-        console.log('Dashboard - User data received:', data)
-        setUser(data.user)
+        const contentType = response.headers.get('content-type')
+        if (contentType && contentType.includes('application/json')) {
+          const data = await response.json()
+          console.log('Dashboard - User data received:', data)
+          setUser(data.user)
+        } else {
+          console.warn('Auth API response is not JSON:', contentType)
+          router.push('/doctor/login')
+        }
       } else {
         console.log('Dashboard - Auth failed, redirecting to login')
         router.push('/doctor/login')
@@ -81,32 +154,23 @@ export default function DoctorDashboard() {
 
   const fetchConsultations = async () => {
     try {
-      // Temporarily use mock data for testing
-      setConsultations([
-        {
-          id: '1',
-          status: 'PENDING',
-          symptoms: 'Fever and headache',
-          isUrgent: false,
-          createdAt: new Date().toISOString(),
-          patient: {
-            id: '1',
-            name: 'John Doe',
-            age: 35,
-            gender: 'Male',
-            village: 'Test Village'
-          },
-          miRoom: {
-            name: 'Test MI Room',
-            village: 'Test Village'
-          },
-          incharge: {
-            name: 'Test Incharge'
-          }
+      const response = await fetch('/api/consultations')
+      if (response.ok) {
+        const contentType = response.headers.get('content-type')
+        if (contentType && contentType.includes('application/json')) {
+          const data = await response.json()
+          setConsultations(data.consultations || [])
+        } else {
+          console.warn('Consultations API response is not JSON:', contentType)
+          throw new Error('Invalid response format')
         }
-      ])
+      } else {
+        console.error('Failed to fetch consultations:', response.status)
+        setConsultations([])
+      }
     } catch (error) {
       console.error('Failed to fetch consultations:', error)
+      setConsultations([])
     }
   }
 
@@ -137,10 +201,51 @@ export default function DoctorDashboard() {
     setShowConsultationRoom(true)
   }
 
+  const startVideoCall = async (consultation: Consultation) => {
+    try {
+      console.log('🎥 Starting video call for consultation:', consultation.id)
+      
+      // Redirect to external video consultation platform
+      window.open('https://quickconnectfrontend.onrender.com/home', '_blank')
+      
+      // Optional: Still notify the system about video call initiation for tracking
+      const response = await fetch('/api/video-call', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          consultationId: consultation.id,
+          action: 'initiate'
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        console.log('✅ Video call initiated successfully:', data)
+      } else {
+        console.error('❌ Failed to initiate video call:', response.status)
+      }
+    } catch (error) {
+      console.error('❌ Error initiating video call:', error)
+    }
+  }
+
   const endConsultation = () => {
     setActiveConsultation(null)
     setShowConsultationRoom(false)
+    setShowVideoCall(false)
     fetchConsultations() // Refresh the list
+  }
+
+  const answerVideoCall = (consultation: Consultation) => {
+    // Redirect to external video consultation platform
+    window.open('https://quickconnectfrontend.onrender.com/home', '_blank')
+    setIncomingCall(null) // Clear the incoming call notification
+  }
+
+  const rejectVideoCall = () => {
+    setIncomingCall(null)
   }
 
   const generatePrescription = () => {
@@ -158,6 +263,35 @@ export default function DoctorDashboard() {
         symptoms={activeConsultation.symptoms}
         isUrgent={activeConsultation.isUrgent}
         onEndConsultation={endConsultation}
+        onPrescribe={generatePrescription}
+      />
+    )
+  }
+
+  if (showVideoCall && activeConsultation) {
+    return (
+      <VideoCallRoom
+        consultationId={activeConsultation.id}
+        localUser={{
+          id: user?.id || 'doctor_1',
+          name: user?.name || 'Dr. Test',
+          role: 'HOSPITAL_DOCTOR',
+          avatar: '👨‍⚕️'
+        }}
+        remoteUser={{
+          id: activeConsultation.id + '_incharge',
+          name: activeConsultation.incharge.name,
+          role: 'MI_ROOM_INCHARGE',
+          avatar: '🏥'
+        }}
+        patientInfo={{
+          name: activeConsultation.patient.name,
+          age: activeConsultation.patient.age,
+          gender: activeConsultation.patient.gender,
+          symptoms: activeConsultation.symptoms,
+          urgency: activeConsultation.isUrgent ? 'High' : 'Medium'
+        }}
+        onEndCall={endConsultation}
         onPrescribe={generatePrescription}
       />
     )
@@ -350,10 +484,16 @@ export default function DoctorDashboard() {
                             </div>
                             <div className="flex flex-col space-y-3 ml-6">
                               <button
-                                onClick={() => startConsultation(consultation)}
+                                onClick={() => startVideoCall(consultation)}
                                 className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl text-sm font-bold hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl"
                               >
-                                🎥 Start Video Consultation
+                                🎥 Start Video Call
+                              </button>
+                              <button
+                                onClick={() => startConsultation(consultation)}
+                                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-xl text-sm font-bold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+                              >
+                                💬 Text Consultation
                               </button>
                               <button
                                 onClick={() => acceptConsultation(consultation.id)}
@@ -421,10 +561,16 @@ export default function DoctorDashboard() {
                           </div>
                           <div className="flex space-x-3">
                             <button
+                              onClick={() => startVideoCall(consultation)}
+                              className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl text-sm font-bold hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+                            >
+                              🎥 Video Call
+                            </button>
+                            <button
                               onClick={() => startConsultation(consultation)}
                               className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl text-sm font-bold hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl"
                             >
-                              🎥 Continue Consultation
+                              💬 Text Chat
                             </button>
                             <button
                               onClick={() => endConsultation()}

@@ -35,11 +35,35 @@ export default function LoginForm({ title, role, redirectPath, className }: Logi
     setIsLoading(true)
     setError('')
 
-    // Simulate login delay for better UX (prototype mode)
-    setTimeout(() => {
-      router.push(redirectPath)
+    try {
+      // Make actual API call to authenticate
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          role: role
+        })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        console.log('✅ Login successful:', data.user)
+        // Redirect to dashboard
+        router.push(redirectPath)
+      } else {
+        setError(data.error || 'Login failed')
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      setError('Network error. Please try again.')
+    } finally {
       setIsLoading(false)
-    }, 1000)
+    }
   }
 
   return (
