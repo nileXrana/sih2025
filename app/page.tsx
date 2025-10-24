@@ -99,7 +99,7 @@ export default function Home() {
 
           {/* Demo Section */}
           <div className="grid md:grid-cols-2 gap-6 mb-12">
-            <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl shadow-lg p-8 text-white text-center">
+            {/* <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl shadow-lg p-8 text-white text-center">
               <h3 className="text-2xl font-semibold mb-4">🎥 Video Call Demo</h3>
               <p className="text-purple-100 mb-6">
                 Test the video calling functionality with mock data
@@ -110,9 +110,9 @@ export default function Home() {
               >
                 Try Video Call Demo
               </Link>
-            </div>
+            </div> */}
             
-            <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-xl shadow-lg p-8 text-white text-center">
+            {/* <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-xl shadow-lg p-8 text-white text-center">
               <h3 className="text-2xl font-semibold mb-4">🔗 Real Data Test</h3>
               <p className="text-green-100 mb-6">
                 Test video calling with real consultation data across multiple tabs
@@ -123,7 +123,7 @@ export default function Home() {
               >
                 Test with Real Data
               </Link>
-            </div>
+            </div> */}
           </div>
 
           {/* Key Benefits */}
